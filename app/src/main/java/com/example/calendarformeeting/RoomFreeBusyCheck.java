@@ -42,11 +42,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.example.calendarquickstart.R.*;
+import static com.example.calendarquickstart.R.layout.*;
+
 public class RoomFreeBusyCheck extends Activity {
     GoogleAccountCredential mCredential;
     ProgressDialog mProgress;
     Calendar mService;
     AsyncTask roomFreeBusyCheck;
+    TextView welcome;
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -56,7 +60,9 @@ public class RoomFreeBusyCheck extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.room_free_busy_check);
+        setContentView(room_free_busy_check);
+
+        welcome = (TextView) findViewById(id.welcome);
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Calling Google Calendar API ...");
@@ -130,7 +136,7 @@ public class RoomFreeBusyCheck extends Activity {
         if (isGooglePlayServicesAvailable()) {
             refreshResults();
         } else {
-           // mOutputText.setText("Google Play Services required: " +"after installing, close and relaunch this app.");
+            welcome.setText("Google Play Services required: " +"after installing, close and relaunch this app.");
         }
     }
 
@@ -157,7 +163,7 @@ public class RoomFreeBusyCheck extends Activity {
                         editor.apply();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
-                    // mOutputText.setText("Account unspecified.");
+                     welcome.setText("Account unspecified.");
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -177,7 +183,7 @@ public class RoomFreeBusyCheck extends Activity {
             if (isDeviceOnline()) {
                 new MakeRequestTask(mCredential).execute();
             } else {
-                // mOutputText.setText("No network connection available.");
+                welcome.setText("No network connection available.");
             }
         }
     }
@@ -293,10 +299,10 @@ public class RoomFreeBusyCheck extends Activity {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             BookRoom.REQUEST_AUTHORIZATION);
                 } else {
-                   // mOutputText.setText("The following error occurred:\n" + mLastError.getMessage());
+                    welcome.setText("The following error occurred:\n" + mLastError.getMessage());
                 }
             } else {
-               // mOutputText.setText("Request cancelled.");
+                   welcome.setText("Request cancelled.");
             }
         }
 
