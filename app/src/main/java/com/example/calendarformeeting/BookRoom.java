@@ -69,8 +69,6 @@ public class BookRoom extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-        // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
@@ -78,36 +76,52 @@ public class BookRoom extends Activity {
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
         setContentView(R.layout.book_room);
 
-        Button button = (Button) findViewById(R.id.button30);
-        button.setOnClickListener(new View.OnClickListener() {
+        Button button30 = (Button) findViewById(R.id.button30);
+        button30.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(BookRoom.this,BookingStatus.class);
-                EditText editText = (EditText) findViewById(R.id.meetingName);
-                String message = editText.getText().toString();
+                bookRoomForSpecifiedTime(30);
+            }
+        });
 
-                HttpTransport transport = AndroidHttp.newCompatibleTransport();
-                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-                mService = new com.google.api.services.calendar.Calendar.Builder(transport, jsonFactory, mCredential)
-                        .setApplicationName("Meeting Room Application")
-                        .build();
+        Button button60 = (Button) findViewById(R.id.button60);
+        button60.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                bookRoomForSpecifiedTime(60);
+            }
+        });
 
-                boolean isEventCreated = false;
-                try {
-                    isEventCreated = calendar.createEvent(mService, mCredential, message, CalendarIDs.SANTA_ANA_ID, 30, isRoomBusy);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                intent.putExtra(EXTRA_MESSAGE, message);
-                intent.putExtra(IS_EVENT_CREATED, isEventCreated);
-                startActivity(intent);
+        Button button90 = (Button) findViewById(R.id.button90);
+        button90.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                bookRoomForSpecifiedTime(90);
             }
         });
     }
 
+    private void bookRoomForSpecifiedTime(int minutes){
+        Intent intent = new Intent(BookRoom.this,BookingStatus.class);
+        EditText editText = (EditText) findViewById(R.id.meetingName);
+        String message = editText.getText().toString();
 
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        mService = new com.google.api.services.calendar.Calendar.Builder(transport, jsonFactory, mCredential)
+                .setApplicationName("Meeting Room Application")
+                .build();
+
+        boolean isEventCreated = false;
+        try {
+            isEventCreated = calendar.createEvent(mService, mCredential, message, CalendarIDs.SANTA_ANA_ID, minutes, isRoomBusy);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        intent.putExtra(EXTRA_MESSAGE, message);
+        intent.putExtra(IS_EVENT_CREATED, isEventCreated);
+        startActivity(intent);
+    }
 }
 
