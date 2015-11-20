@@ -69,11 +69,12 @@ public class RoomFreeBusyCheck extends Activity {
         mProgress.setMessage("Calling Google Calendar API ...");
 
         String SCOPES = CalendarScopes.CALENDAR;
+
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
-                .setSelectedAccountName(settings.getString("account", null));
+                .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
 
 
         roomFreeBusyCheck = new AsyncTask<Object, Void, String>() {
