@@ -23,9 +23,14 @@ public class BookingStatus extends AppCompatActivity {
         if(isEventCreated){
             textView.setText(message +" event successfully created");
         }else {
-            textView.setText("Cannot create event");
+            textView.setText("Cannot create event. Room is busy");
         }
         setContentView(textView);
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(BookingStatus.this,RoomFreeBusyCheck.class);
+        startActivity(intent);
+    }
 }

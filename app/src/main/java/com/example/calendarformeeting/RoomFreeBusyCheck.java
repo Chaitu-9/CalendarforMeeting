@@ -46,6 +46,7 @@ import static com.example.calendarquickstart.R.*;
 import static com.example.calendarquickstart.R.layout.*;
 
 public class RoomFreeBusyCheck extends Activity {
+    private static final String PREF_ACCOUNT_NAME = "accountName";
     GoogleAccountCredential mCredential;
     ProgressDialog mProgress;
     Calendar mService;
@@ -159,7 +160,7 @@ public class RoomFreeBusyCheck extends Activity {
                         SharedPreferences settings =
                                 getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("accountName", accountName);
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
@@ -181,7 +182,12 @@ public class RoomFreeBusyCheck extends Activity {
             chooseAccount();
         } else {
             if (isDeviceOnline()) {
-                new MakeRequestTask(mCredential).execute();
+                new MakeRequestTask(mCredential) {
+                    @Override
+                    protected List<String> doInBackground(Void... params) {
+                        return null;
+                    }
+                }.execute();
             } else {
                 welcome.setText("No network connection available.");
             }
@@ -200,8 +206,7 @@ public class RoomFreeBusyCheck extends Activity {
     }
 
     private boolean isGooglePlayServicesAvailable() {
-        final int connectionStatusCode =
-                GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        final int connectionStatusCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (GooglePlayServicesUtil.isUserRecoverableError(connectionStatusCode)) {
             showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
             return false;
@@ -220,7 +225,7 @@ public class RoomFreeBusyCheck extends Activity {
         dialog.show();
     }
 
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+    private abstract class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
 
         private Exception mLastError = null;
 
@@ -232,43 +237,6 @@ public class RoomFreeBusyCheck extends Activity {
                     .build();
         }
 
-
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-
-        private List<String> getDataFromApi() throws IOException {
-            // List the next 10 events from the primary calendar.
-            DateTime now = new DateTime(System.currentTimeMillis());
-            List<String> eventStrings = new ArrayList<String>();
-            Events events = mService.events().list("primary")
-                    .setMaxResults(10)
-                    .setTimeMin(now)
-                    .setOrderBy("startTime")
-                    .setSingleEvents(true)
-                    .execute();
-            List<Event> items = events.getItems();
-
-            for (Event event : items) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    // All-day events don't have start times, so just use
-                    // the start date.
-                    start = event.getStart().getDate();
-                }
-                eventStrings.add(
-                        String.format("%s (%s)", event.getSummary(), start));
-            }
-            return eventStrings;
-        }
 
         @Override
         protected void onPreExecute() {
@@ -286,6 +254,7 @@ public class RoomFreeBusyCheck extends Activity {
             mProgress.hide();
             roomFreeBusyCheck.execute();
         }
+
         @Override
         protected void onCancelled() {
             mProgress.hide();
@@ -302,7 +271,7 @@ public class RoomFreeBusyCheck extends Activity {
                     welcome.setText("The following error occurred:\n" + mLastError.getMessage());
                 }
             } else {
-                   welcome.setText("Request cancelled.");
+                welcome.setText("Request cancelled.");
             }
         }
 
