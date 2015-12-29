@@ -4,8 +4,10 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -52,6 +54,8 @@ public class RoomFreeBusyCheck extends Activity {
     Calendar mService;
     AsyncTask roomFreeBusyCheck;
     TextView welcome;
+    private ResponseReceiver receiver;
+
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -65,6 +69,16 @@ public class RoomFreeBusyCheck extends Activity {
 
         welcome = (TextView) findViewById(id.welcome);
 
+        IntentFilter filter = new IntentFilter(ResponseReceiver.ROOM_ID);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        receiver = new ResponseReceiver();
+        registerReceiver(receiver, filter);
+
+        String strInputMsg = CalendarIDs.SANTA_ANA_ID;
+        Intent msgIntent = new Intent(this, RoomFreeBusyService.class);
+        msgIntent.putExtra(RoomFreeBusyService.ROOM_ID, strInputMsg);
+        startService(msgIntent);
+
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Calling Google Calendar API ...");
 
@@ -75,7 +89,6 @@ public class RoomFreeBusyCheck extends Activity {
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
-
 
         roomFreeBusyCheck = new AsyncTask<Object, Void, String>() {
             String isRoomBusy;
@@ -129,6 +142,7 @@ public class RoomFreeBusyCheck extends Activity {
                 }
             }
         };
+
 
     }
 
@@ -276,5 +290,18 @@ public class RoomFreeBusyCheck extends Activity {
             }
         }
 
+    }
+
+    public class ResponseReceiver extends BroadcastReceiver {
+
+
+        public static final String ROOM_ID = "test";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            TextView result = (TextView) findViewById(id.welcome);
+            String text = intent.getStringExtra(RoomFreeBusyService.ROOM_ID);
+            result.setText(text);
+        }
     }
 }
